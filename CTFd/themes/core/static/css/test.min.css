@@ -1,0 +1,193 @@
+body,
+html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
+.background-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    display: flex;
+    justify-content: center;
+    /* Center horizontally */
+    align-items: center;
+    /* Center vertically */
+}
+
+.timer {
+    text-align: center;
+    position: absolute;
+    color: aliceblue;
+    top: 9%;
+    left: 50%;
+    transform: translateX(-50%);
+    color: yellow;
+    position: absolute;
+    font-family: 'RittswoodImpresive_6', sans-serif;
+    font-size: 150%;
+}
+
+.player1-bar {
+    /* width: 30%; */
+    height: 4%;
+    position: absolute;
+    display: flex;
+    top: 3%;
+    left: 7.5%;
+}
+
+.player1-bar img.green {
+    /* width: 33%; */
+    height: auto;
+    position: relative;
+    object-fit: fill;
+}
+
+
+.player1-bar img.red {
+    /* width: 67%; */
+    height: auto;
+    position: relative;
+    object-fit: fill;
+}
+
+.player2-bar {
+    /* width: 30%; */
+    height: 4%;
+    position: absolute;
+    display: flex;
+    top: 3%;
+    right: 7.5%;
+}
+
+.player2-bar img.green {
+    /* width: 67%; */
+    height: auto;
+    position: relative;
+    object-fit: fill;
+}
+
+.player2-bar img.red {
+    /* width: 33%; */
+    height: auto;
+    position: relative;
+    object-fit: fill;
+}
+
+
+.background-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    /* Ensure the background image covers the container */
+}
+
+.player_name {
+    color: yellow;
+    position: absolute;
+    top: 8%;
+    font-family: 'RittswoodImpresive_6', sans-serif;
+}
+
+
+
+.red {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.red img.standing {
+    width: 320px;
+    height: 320px;
+    position: absolute;
+    top: 65%;
+    left: 40%;
+    transform: translate(-50%, -50%);
+    /* border: 2px solid #ff0000;/ */
+}
+
+.red img.tornado {
+    width: 875px;
+    height: 440px;
+    position: absolute;
+    top: 60%;
+    left: 44%;
+    transform: translate(-50%, -50%);
+    /* border: 2px solid #ff0000;/ */
+}
+
+.red img.win {
+    width: 600px;
+    height: 350px;
+    position: absolute;
+    top: 65%;
+    left: 36%;
+    transform: translate(-50%, -50%) rotateY(180deg);
+
+    /* transform: rotate(180deg); */
+    /* border: 2px solid #ff0000;/ */
+}
+
+.red img.lose {
+    width: 200px;
+    height: 370px;
+    position: absolute;
+    top: 72.5%;
+    left: 40%;
+    transform: translate(-50%, -50%);
+    /* border: 2px solid #ff0000;/ */
+}
+
+.blue {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    transform: scaleX(-1);
+}
+
+.blue img.standing {
+    width: 179px;
+    height: 330px;
+    position: absolute;
+    top: 65%;
+    left: 40%;
+    transform: translate(-50%, -50%);
+}
+
+.blue img.tornado {
+    width: 875px;
+    height: 440px;
+    position: absolute;
+    top: 60%;
+    left: 44%;
+    transform: translate(-50%, -50%);
+    /* border: 2px solid #ff0000;/ */
+}
+
+.blue img.lose {
+    width: 250px;
+    height: 300px;
+    position: absolute;
+    top: 69%;
+    left: 37%;
+    transform: translate(-50%, -50%);
+    /* border: 2px solid #ff0000;/ */
+}
+
+.blue img.win {
+    width: 250px;
+    height: 330px;
+    position: absolute;
+    top: 66%;
+    left: 37%;
+    transform: translate(-50%, -50%);
+    /* border: 2px solid #ff0000;/ */
+}

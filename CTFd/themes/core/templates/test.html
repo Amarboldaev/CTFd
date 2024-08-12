@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+
+
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PWN Boxing</title>
+    <link rel="stylesheet" href="{{ url_for('views.themes', theme='core', path='css/test.css') }}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+    <link href="https://fonts.cdnfonts.com/css/rittswood-impresive" rel="stylesheet">
+
+
+</head>
+
+<body>
+    </div>
+    <div class="background-container">
+        <!-- Audio -->
+        <audio id="sound_fight">
+            <source src="{{ url_for('views.themes', theme='core', path='img/sound_fight.mp3') }}" type="audio/mpeg">
+        </audio>
+        <audio id="sound_ko">
+            <source src="{{ url_for('views.themes', theme='core', path='img/sound_ko.mp3') }}" type="audio/mpeg">
+        </audio>
+        <audio id="sound_end">
+            <source src="{{ url_for('views.themes', theme='core', path='img/sound_end.mp3') }}" type="audio/mpeg">
+        </audio>
+        <audio id="sound_hit">
+            <source src="{{ url_for('views.themes', theme='core', path='img/sound_hit.mp3') }}" type="audio/mpeg">
+        </audio>
+
+
+
+        <!-- Background -->
+        <img src="{{ url_for('views.themes', theme='core', path='img/main.png') }}">
+
+        <!-- Score -->
+        <div id="score-container" style="color: aqua; position: absolute;top: 0;left: 0"></div>
+
+        <!-- Timer -->
+        <div id="timer" class="timer">30:00</div>
+
+
+        <!-- Blue player BAR -->
+        <div class="player1-bar">
+            <img id="player1-green" class="green"
+                src="{{ url_for('views.themes', theme='core', path='img/bar_green.gif') }}">
+            <img id="player1-red" class="red" src="{{ url_for('views.themes', theme='core', path='img/bar_red.gif') }}">
+        </div>
+
+        <!-- Red player BAR -->
+        <div class="player2-bar">
+            <img id="player2-red" class="red" src="{{ url_for('views.themes', theme='core', path='img/bar_red.gif') }}">
+            <img id="player2-green" class="green"
+                src="{{ url_for('views.themes', theme='core', path='img/bar_green.gif') }}">
+        </div>
+
+
+        <!-- Player name -->
+        <div id="red_name" class="player_name" style="left: 10%;"></div>
+        <div id="blue_name" class="player_name" style="right: 10%;"></div>
+
+        <!-- Characters -->
+        <!-- RED -->
+        <div class="red">
+            <img class="standing" id="red_gif_standing"
+                src="{{ url_for('views.themes', theme='core', path='img/red.gif') }}" style="display: none;">
+            <img class="tornado" id="red_gif_kick" style="display: none;">
+            <img class="win" id="red_win" style="display: none;">
+            <img class="lose" id="red_lose" style="display: none;">
+        </div>
+        <!-- BLUE -->
+        <div class="blue">
+            <img class="standing" id="blue_gif_standing"
+                src="{{ url_for('views.themes', theme='core', path='img/blue.gif') }}" style="display: none;">
+            <img class="tornado" id="blue_gif_kick" style="display: none;">
+            <img class="win" id="blue_win" style="display: none;">
+            <img class="lose" id="blue_lose" style="display: none;">
+        </div>
+    </div>
+
+
+
+
+    <script>
+        async function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        var sound_ko = document.getElementById("sound_ko");
+        sound_ko.volume = 0.08
+        var sound_fight = document.getElementById("sound_fight");
+        sound_fight.volume = 1
+        var sound_end = document.getElementById("sound_end");
+        sound_end.volume = 0.2
+        var sound_hit = document.getElementById("sound_hit");
+        sound_hit.volume = 0.2
+
+        let red_score = 0
+        var red_name = null
+        var red_Green_Bar = document.getElementById("player1-green");
+        var red_Red_Bar = document.getElementById("player1-red");
+        var red_Standing = document.getElementById("red_gif_standing");
+        var red_Kick = document.getElementById("red_gif_kick");
+        var red_win = document.getElementById("red_win")
+        var red_lose = document.getElementById("red_lose")
+
+        let blue_score = 0
+        var blue_name = null
+        var blue_Standing = document.getElementById("blue_gif_standing");
+        var blue_Green_Bar = document.getElementById("player2-green");
+        var blue_Red_Bar = document.getElementById("player2-red");
+        var blue_Kick = document.getElementById("blue_gif_kick");
+        var blue_win = document.getElementById("blue_win")
+        var blue_lose = document.getElementById("blue_lose")
+
+
+
+
+
+        let interval_id = null
+        let refresh_interval = null
+
+        // Get Users
+        function get_initial_data() {
+            $.ajax({
+                url: '/api/v1/users',
+                type: 'GET',
+                dataType: 'json',
+                success: async function (data) {
+                    red_Standing.style.display = "block";
+                    blue_Standing.style.display = "block";
+                    red_Green_Bar.style.width = "100%";
+                    red_Red_Bar.style.width = "0%";
+                    blue_Green_Bar.style.width = "100%";
+                    blue_Red_Bar.style.width = "0%";
+                    if (data.data.length == 2) {
+                        red_name = data.data[0].name
+                        blue_name = data.data[1].name
+                        $('#red_name').html(`<p>${red_name}</p>`);
+                        $('#blue_name').html(`<p>${blue_name}</p>`);
+                        refresh_interval = setInterval(refreshData, 3000);
+                        updateTimer({ "update": 1 })
+                        sound_fight.play()
+                        if (interval_id != null) {
+                            clearInterval(interval_id)
+                        }
+                    } else if (interval_id == null) {
+                        interval_id = setInterval(get_initial_data, 3000);
+                    }
+
+                }
+            })
+        }
+
+        async function refresh_Bar(red_score, blue_score) {
+            var full_health = 4000
+
+            var blue_red_percentage = Math.round((red_score) / (full_health / 100))
+            var blue_green_percentage = Math.round(100 - blue_red_percentage)
+            blue_Red_Bar.style.width = `${blue_red_percentage}%`;
+            blue_Green_Bar.style.width = `${blue_green_percentage}%`;
+
+            var red_red_percentage = Math.round((blue_score) / (full_health / 100))
+            var red_green_percentage = Math.round(100 - red_red_percentage)
+            red_Red_Bar.style.width = `${red_red_percentage}%`;
+            red_Green_Bar.style.width = `${red_green_percentage}%`;
+
+            if (red_red_percentage == 100) {
+                clearInterval(refresh_interval)
+                clearInterval(interval);
+                timerElement.textContent = `KO!\n${blue_name} wins`;
+                sound_ko.play();
+                await sleep(600);
+                blue_Standing.style.display = "none";
+                blue_win.src = "{{ url_for('views.themes', theme='core', path='img/blue_win.gif') }}"
+                blue_win.style.display = "block";
+                red_Standing.style.display = "none";
+                red_lose.src = "{{ url_for('views.themes', theme='core', path='img/red_lose.gif') }}"
+                red_lose.style.display = "block";
+            } else if (blue_red_percentage == 100) {
+                clearInterval(refresh_interval)
+                clearInterval(interval);
+                timerElement.textContent = `KO!\n${red_name} wins`;
+                sound_ko.play();
+                await sleep(600);
+                red_Standing.style.display = "none";
+                red_win.src = "{{ url_for('views.themes', theme='core', path='img/red_win.gif') }}"
+                red_win.style.display = "block";
+                blue_Standing.style.display = "none";
+                blue_lose.src = "{{ url_for('views.themes', theme='core', path='img/blue_lose.gif') }}"
+                blue_lose.style.display = "block";
+            } else {
+                await sleep(600);
+                red_Standing.style.display = "block";
+                blue_Standing.style.display = "block";
+            }
+        }
+
+        async function updateData(data) {
+            keys = Object.keys(data)
+            for (let index = 0; index < keys.length; index++) {
+                if (keys[index] == red_name && red_score != data[keys[index]]) {
+                    red_Standing.style.display = "none";
+                    red_Kick.src = "{{ url_for('views.themes', theme='core', path='img/red_tornado.gif') }}";
+                    red_Kick.style.display = "block";
+                    await sleep(700);
+                    sound_hit.play()
+                    refresh_Bar(data[keys[index]], blue_score);
+                    await sleep(600);
+                    red_Kick.src = "";
+                    red_Kick.style.display = "none";
+                    // red_Standing.style.display = "block";
+                    red_score = data[keys[index]];
+                } else if (keys[index] == blue_name && blue_score != data[keys[index]]) {
+
+                    blue_Standing.style.display = "none";
+                    blue_Kick.src = "{{ url_for('views.themes', theme='core', path='img/blue_tornado.gif') }}";
+                    blue_Kick.style.display = "block";
+                    await sleep(1100);
+                    sound_hit.play()
+                    refresh_Bar(red_score, data[keys[index]]);
+                    await sleep(600);
+                    blue_Kick.src = "";
+                    blue_Kick.style.display = "none";
+                    // blue_Standing.style.display = "block";
+                    blue_score = data[keys[index]];
+                }
+            }
+            // $('#score-container').html(`<p>Timestamp: ${data.timestamp}</p><p>${red_name}: ${red_score}</p><p>${blue_name}: ${blue_score}</p>`);
+        }
+
+        function refreshData() {
+            $.ajax({
+                url: '/get_data',
+                type: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    updateData(data)
+                }
+            });
+        }
+
+
+        const countdownDuration = 180;
+        let timerElement = document.getElementById('timer');
+        let seconds = countdownDuration;
+        let interval;
+
+        function countdown() {
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const remainingSeconds = seconds % 60;
+
+            const formattedTime = `${formatTime(minutes)}:${formatTime(remainingSeconds)}`;
+            timerElement.textContent = formattedTime;
+
+            if (seconds === 0) {
+                clearInterval(refresh_interval)
+                clearInterval(interval);
+                timerElement.style.top = "8%"
+                sound_end.play()
+                if (red_score > blue_score) {
+                    timerElement.innerHTML = `Time's up!<br>${red_name} wins`;
+                    red_Standing.style.display = "none";
+                    red_win.src = "{{ url_for('views.themes', theme='core', path='img/red_win.gif') }}"
+                    red_win.style.display = "block";
+                    blue_Standing.style.display = "none";
+                    blue_lose.src = "{{ url_for('views.themes', theme='core', path='img/blue_lose.gif') }}"
+                    blue_lose.style.display = "block";
+                } else if (red_score < blue_score) {
+                    timerElement.innerHTML = `Time's up!<br>${blue_name} wins`;
+                    red_Standing.style.display = "none";
+                    red_lose.src = "{{ url_for('views.themes', theme='core', path='img/red_lose.gif') }}"
+                    red_lose.style.display = "block";
+                    blue_Standing.style.display = "none";
+                    blue_win.src = "{{ url_for('views.themes', theme='core', path='img/blue_win.gif') }}"
+                    blue_win.style.display = "block";
+                } else if (red_score == blue_score) {
+                    timerElement.innerHTML = "Time's up!<br>Draw";
+                    red_Standing.style.display = "none";
+                    red_win.src = "{{ url_for('views.themes', theme='core', path='img/red_win.gif') }}"
+                    red_win.style.display = "block";
+                    blue_Standing.style.display = "none";
+                    blue_win.src = "{{ url_for('views.themes', theme='core', path='img/blue_win.gif') }}"
+                    blue_win.style.display = "block";
+
+                }
+            }
+            else {
+                seconds--;
+            }
+        }
+
+        function formatTime(value) {
+            return value < 10 ? `0${value}` : value;
+        }
+
+        function updateTimer(update) {
+            countdown(); // Initial display
+            interval = setInterval(countdown, 1000); // Update the timer every second
+        }
+
+
+        get_initial_data();
+    </script>
+
+</html>

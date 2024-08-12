@@ -137,6 +137,10 @@ class ThemeLoader(FileSystemLoader):
         return super(ThemeLoader, self).get_source(environment, template)
 
 
+ 
+     
+
+
 def confirm_upgrade():
     if sys.stdin.isatty():
         print("/*\\ CTFd has updated and must update the database! /*\\")
@@ -156,9 +160,12 @@ def run_upgrade():
     utils.set_config("ctf_version", __version__)
 
 
+
+
 def create_app(config="CTFd.config.Config"):
     app = CTFdFlask(__name__)
     with app.app_context():
+
         app.config.from_object(config)
 
         loaders = []
@@ -295,7 +302,9 @@ def create_app(config="CTFd.config.Config"):
         from CTFd.teams import teams
         from CTFd.users import users
         from CTFd.views import views
+        from CTFd.my_blueprint import my_blueprint
 
+        app.register_blueprint(my_blueprint)
         app.register_blueprint(views)
         app.register_blueprint(teams)
         app.register_blueprint(users)
@@ -304,8 +313,8 @@ def create_app(config="CTFd.config.Config"):
         app.register_blueprint(auth)
         app.register_blueprint(api)
         app.register_blueprint(events)
-
         app.register_blueprint(admin)
+
 
         for code in {403, 404, 500, 502}:
             app.register_error_handler(code, render_error)
